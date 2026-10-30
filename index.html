@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#F5EFE0">
+<title>重走长征路 · 知识竞答</title>
+<style>
+  :root{
+    --red:#8B1A1A;
+    --red-2:#A93226;
+    --bg:#F5EFE0;
+    --card:#FFFBF2;
+    --text:#2B2B2B;
+    --muted:#7A6E63;
+    --line:#E2D6C0;
+    --ok:#2E7D32;
+    --bad:#C0392B;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    -webkit-text-size-adjust:100%;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    padding:28px 20px 36px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- 通用屏幕 ---------- */
+  .screen{display:none;flex:1;flex-direction:column;animation:fade .22s ease both;}
+  .screen.active{display:flex;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  .eyebrow{font-size:13px;color:var(--muted);letter-spacing:1px;margin:0 0 18px;}
+  .meta{font-size:14px;color:var(--muted);margin:0 0 6px;}
+  .meta.small{font-size:12.5px;}
+
+  .btn{
+    display:block;width:100%;padding:16px;border:none;border-radius:12px;
+    background:var(--red);color:#fff;font-size:17px;font-weight:600;
+    font-family:inherit;letter-spacing:1px;cursor:pointer;
+    transition:background .15s,opacity .15s;
+  }
+  .btn:active{background:var(--red-2);}
+  .btn.ghost{background:transparent;color:var(--red);border:1.5px solid var(--red);}
+  .btn.ghost:active{background:#F3E7E4;}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn:disabled:active{background:var(--red);}
+  .btn.ghost:disabled:active{background:transparent;}
+
+  /* ---------- 第一屏：封面 ---------- */
+  #s-cover{justify-content:center;text-align:center;}
+  .cover-card{padding:8px 0 34px;}
+  .title{font-size:40px;line-height:1.2;color:var(--red);margin:0;letter-spacing:5px;font-weight:700;}
+  .rule{width:44px;height:3px;background:var(--red);margin:20px auto;border-radius:2px;}
+  .subtitle{font-size:19px;margin:0 0 14px;letter-spacing:2px;color:#3A3330;}
+
+  /* ---------- 第二屏：答题 ---------- */
+  .quiz-top{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:10px;}
+  .qbar{height:4px;background:#E7DBC6;border-radius:2px;overflow:hidden;margin-bottom:26px;}
+  .qbar-fill{height:100%;width:0;background:var(--red);border-radius:2px;transition:width .25s;}
+  .qtext{font-size:19px;line-height:1.55;margin:0 0 22px;font-weight:600;color:#241F1C;}
+  .options{display:flex;flex-direction:column;gap:11px;margin-bottom:26px;}
+  .option{
+    display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+    background:var(--card);border:1.5px solid var(--line);border-radius:12px;
+    padding:15px 14px;font-size:16.5px;line-height:1.45;color:var(--text);
+    font-family:inherit;cursor:pointer;
+    transition:border-color .15s,background .15s;
+  }
+  .option .tag{
+    flex:none;width:24px;height:24px;border-radius:50%;background:#EFE3CC;
+    color:#8A7A64;font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .option.selected{border-color:var(--red);background:#FBF0EE;}
+  .option.selected .tag{background:var(--red);color:#fff;}
+
+  .nav{display:flex;gap:12px;margin-top:auto;}
+  .nav .btn{flex:1;}
+  .nav.col{flex-direction:column;}
+
+  /* ---------- 第三屏：成绩 ---------- */
+  #s-result{justify-content:center;text-align:center;}
+  .result-card{padding:10px 0 40px;}
+  .score{font-size:74px;font-weight:700;color:var(--red);line-height:1;}
+  .score small{font-size:22px;font-weight:600;margin-left:4px;}
+  .score-sub{font-size:15px;color:var(--muted);margin:18px 0 0;}
+  .score-tip{font-size:14px;color:var(--muted);margin:28px 0 0;letter-spacing:1px;}
+
+  /* ---------- 第四屏：回顾 ---------- */
+  .review-head h2{font-size:22px;color:var(--red);margin:0 0 6px;letter-spacing:1px;}
+  .review-list{display:flex;flex-direction:column;gap:14px;margin:20px 0 26px;}
+  .ritem{background:var(--card);border:1.5px solid var(--line);border-left-width:4px;border-radius:10px;padding:14px;}
+  .ritem.ok{border-left-color:var(--ok);}
+  .ritem.no{border-left-color:var(--bad);}
+  .rhead{font-size:12.5px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;}
+  .rmark{font-weight:700;}
+  .rmark.ok{color:var(--ok);}
+  .rmark.no{color:var(--bad);}
+  .rq{font-size:15.5px;line-height:1.5;margin:0 0 10px;font-weight:600;}
+  .ra{font-size:14px;line-height:1.6;margin:0 0 4px;color:#4A423B;}
+  .ra.mine{color:var(--muted);}
+  .rexp{font-size:13.5px;line-height:1.65;color:var(--muted);margin:8px 0 0;padding-top:8px;border-top:1px dashed var(--line);}
+</style>
+</head>
+<body>
+<main id="app">
+
+  <!-- ========== 第一屏：封面 ========== -->
+  <section class="screen active" id="s-cover">
+    <div class="cover-card">
+      <p class="eyebrow">2024级大数据2班 · 主题团日活动</p>
+      <h1 class="title">重走长征路</h1>
+      <div class="rule"></div>
+      <p class="subtitle">长征知识竞答</p>
+      <p class="meta" id="coverDate"></p>
+      <p class="meta small">共 15 题 · 题库 30 道随机抽取</p>
+    </div>
+    <button class="btn" id="btnStart">开始答题</button>
+  </section>
+
+  <!-- ========== 第二屏：答题 ========== -->
+  <section class="screen" id="s-quiz">
+    <div class="quiz-top">
+      <span id="qIndex">第 1 / 15 题</span>
+      <span id="qAnswered">已答 0 题</span>
+    </div>
+    <div class="qbar"><div class="qbar-fill" id="qbarFill"></div></div>
+    <h2 class="qtext" id="qtext"></h2>
+    <div class="options" id="options"></div>
+    <div class="nav">
+      <button class="btn ghost" id="btnPrev">上一题</button>
+      <button class="btn" id="btnNext">下一题</button>
+    </div>
+  </section>
+
+  <!-- ========== 第三屏：成绩 ========== -->
+  <section class="screen" id="s-result">
+    <div class="result-card">
+      <p class="eyebrow">答题完成</p>
+      <div class="score"><span id="scoreNum">0</span><small>分</small></div>
+      <p class="score-sub" id="scoreSub"></p>
+      <p class="score-tip">长征精神，永远在路上。</p>
+    </div>
+    <div class="nav col">
+      <button class="btn" id="btnReview">查看答题回顾</button>
+      <button class="btn ghost" id="btnAgain1">再来一次</button>
+    </div>
+  </section>
+
+  <!-- ========== 第四屏：回顾 ========== -->
+  <section class="screen" id="s-review">
+    <div class="review-head">
+      <h2>答题回顾</h2>
+      <p class="meta" id="reviewSum"></p>
+    </div>
+    <div class="review-list" id="reviewList"></div>
+    <button class="btn" id="btnAgain2">再来一次</button>
+  </section>
+
+</main>
+
+<script>
+/* =========================================================
+   题库：共 30 道。q=题干  o=选项  a=正确选项下标  e=解析
+   要加题就往下面数组里继续加，格式完全一样。
+   ========================================================= */
+const BANK = [
+  { q:'中央红军开始长征是在哪一年？',
+    o:['1933年','1934年','1935年','1936年'], a:1,
+    e:'1934年10月，中央红军主力被迫实行战略转移，踏上长征之路。' },
+
+  { q:'中央红军从出发到到达陕北吴起镇，历时约多久？',
+    o:['半年','一年','两年','三年'], a:1,
+    e:'1934年10月出发，1935年10月到达陕北吴起镇，历时一年。' },
+
+  { q:'长征途中，中央红军损失最为惨重的一仗是？',
+    o:['湘江战役','四渡赤水','飞夺泸定桥','腊子口战斗'], a:0,
+    e:'1934年11月至12月的湘江战役，是长征中最惨烈的一仗，中央红军付出了极其惨重的代价。' },
+
+  { q:'湘江战役后，中央红军由出发时的8.6万余人锐减至约多少人？',
+    o:['6万余人','5万余人','3万余人','1万余人'], a:2,
+    e:'湘江战役后，中央红军由8.6万余人锐减至3万余人，这是长征途中损失最大的一次战役。' },
+
+  { q:'遵义会议召开的时间是？',
+    o:['1934年10月','1935年1月','1935年10月','1936年10月'], a:1,
+    e:'1935年1月，中共中央政治局在贵州遵义召开扩大会议。' },
+
+  { q:'遵义会议召开的地点是？',
+    o:['江西瑞金','贵州遵义','陕西延安','甘肃会宁'], a:1,
+    e:'遵义会议在贵州遵义召开，这次会议在极端危急的历史关头挽救了党、挽救了红军、挽救了中国革命。' },
+
+  { q:'遵义会议最重要的历史意义是？',
+    o:['制定了抗日民族统一战线的策略方针','确立了毛泽东在党中央和红军的领导地位','决定红军北上抗日的方向','宣告长征胜利结束'], a:1,
+    e:'遵义会议确立了毛泽东在党中央和红军的领导地位，是党的历史上一个生死攸关的转折点。抗日民族统一战线方针是1935年12月瓦窑堡会议确定的。' },
+
+  { q:'遵义会议后，红军在川黔滇边界进行的著名机动作战是？',
+    o:['四渡赤水','强渡大渡河','突破腊子口','激战娄山关'], a:0,
+    e:'四渡赤水是遵义会议后红军在毛泽东等指挥下进行的著名机动作战。' },
+
+  { q:'“四渡赤水”主要发生在今天哪个省境内？',
+    o:['湖南','贵州','四川','甘肃'], a:1,
+    e:'1935年1月至3月，中央红军在川黔滇交界的赤水河一带四次渡过赤水河，摆脱了几十万敌军的围追堵截，主要地域在今贵州境内。' },
+
+  { q:'1935年5月，红军巧渡金沙江的主要意义是？',
+    o:['打开了北上抗日的通道','跳出了敌人重兵围追堵截的包围圈','实现了三大主力会师','宣告长征胜利结束'], a:1,
+    e:'巧渡金沙江后，中央红军摆脱了数十万国民党军的围追堵截，取得了战略转移中具有决定意义的胜利。' },
+
+  { q:'“飞夺泸定桥”中红军勇士夺取的是哪条大河上的铁索桥？',
+    o:['乌江','金沙江','大渡河','湘江'], a:2,
+    e:'泸定桥横跨大渡河。1935年5月29日，红军先头部队夺占泸定桥，为全军打开北上通道。' },
+
+  { q:'飞夺泸定桥时，红军先头部队一昼夜急行军的距离约为？',
+    o:['120里','180里','240里','300里'], a:2,
+    e:'红军先头部队一昼夜奔袭240里，抢在敌人增援之前赶到大渡河畔，创造了急行军的奇迹。' },
+
+  { q:'中央红军长征中翻越的第一座大雪山是？',
+    o:['夹金山','六盘山','岷山','乌蒙山'], a:0,
+    e:'1935年6月，中央红军翻越四川宝兴的夹金山，这是长征中翻越的第一座大雪山。' },
+
+  { q:'红军长征中跨越的茫茫草地，主要位于今天的？',
+    o:['贵州','云南','四川','甘肃'], a:2,
+    e:'1935年8月，红军进入四川松潘草地（今若尔盖一带），沼泽遍布、气候恶劣，是长征中最艰苦的路段之一。' },
+
+  { q:'中央红军到达陕北吴起镇，标志着红一方面军长征胜利结束，时间是？',
+    o:['1934年10月','1935年1月','1935年10月','1936年10月'], a:2,
+    e:'1935年10月，中央红军到达陕北吴起镇，历时一年的长征胜利结束。' },
+
+  { q:'红军三大主力会师，宣告长征胜利结束，会师地点是？',
+    o:['江西瑞金','贵州遵义','甘肃会宁','陕西延安'], a:2,
+    e:'1936年10月，红一、红二、红四方面军在甘肃会宁及将台堡等地会师。' },
+
+  { q:'红军三大主力会师的时间是？',
+    o:['1935年1月','1935年10月','1936年10月','1937年7月'], a:2,
+    e:'1936年10月，红军三大主力会师，标志着长征全面胜利结束。' },
+
+  { q:'中央红军长征走过的路程，通常表述为？',
+    o:['一万里','一万五千里','二万五千里','五万里'], a:2,
+    e:'中央红军长征行程约二万五千里，这一数字已成为长征的标志性表述。' },
+
+  { q:'长征途中，红军三大主力不包括下列哪支部队？',
+    o:['红一方面军','红二方面军','红四方面军','红六方面军'], a:3,
+    e:'红军三大主力是红一、红二、红四方面军，历史上并不存在“红六方面军”。' },
+
+  { q:'《七律·长征》中“五岭逶迤腾细浪”的下一句是？',
+    o:['乌蒙磅礴走泥丸','金沙水拍云崖暖','大渡桥横铁索寒','更喜岷山千里雪'], a:0,
+    e:'“五岭逶迤腾细浪，乌蒙磅礴走泥丸。”出自毛泽东《七律·长征》。' },
+
+  { q:'《七律·长征》中“金沙水拍云崖暖”的下一句是？',
+    o:['五岭逶迤腾细浪','乌蒙磅礴走泥丸','大渡桥横铁索寒','三军过后尽开颜'], a:2,
+    e:'“金沙水拍云崖暖，大渡桥横铁索寒。”一暖一寒，写尽巧渡金沙江与飞夺泸定桥两种境况。' },
+
+  { q:'《忆秦娥·娄山关》中“雄关漫道真如铁”的下一句是？',
+    o:['而今迈步从头越','苍山如海，残阳如血','屈指行程二万','万水千山只等闲'], a:0,
+    e:'“雄关漫道真如铁，而今迈步从头越。”写于1935年2月红军再占遵义、攻取娄山关之后。' },
+
+  { q:'《清平乐·六盘山》中“不到长城非好汉”的下一句是？',
+    o:['屈指行程二万','万水千山只等闲','而今迈步从头越','三军过后尽开颜'], a:0,
+    e:'“不到长城非好汉，屈指行程二万。”1935年10月红军翻越六盘山时所作。' },
+
+  { q:'毛泽东提出“长征是宣言书，长征是宣传队，长征是播种机”，出自哪篇文章？',
+    o:['《论持久战》','《论反对日本帝国主义的策略》','《星星之火，可以燎原》','《反对本本主义》'], a:1,
+    e:'1935年12月，毛泽东在《论反对日本帝国主义的策略》中这样评价长征。' },
+
+  { q:'长征中，最先到达陕北的红军部队是？',
+    o:['红一方面军','红二方面军','红四方面军','红二十五军'], a:3,
+    e:'1935年9月，红二十五军到达陕北，同陕北红军会合，组成红十五军团，为中央红军到达陕北创造了条件。' },
+
+  { q:'1935年1月，红军强渡哪条江，打开了通往遵义的门户？',
+    o:['乌江','金沙江','大渡河','赤水河'], a:0,
+    e:'1935年1月，中央红军强渡乌江，为进占遵义创造了条件。' },
+
+  { q:'红军长征翻越的最后一座高山是？',
+    o:['夹金山','六盘山','岷山','五岭'], a:1,
+    e:'1935年10月，红军翻越六盘山，这是长征途中翻越的最后一座高山。' },
+
+  { q:'习近平总书记指出，长征精神是中华民族自强不息的民族品格的集中展示，是以什么为核心的民族精神的最高体现？',
+    o:['集体主义','爱国主义','英雄主义','国际主义'], a:1,
+    e:'长征精神是以爱国主义为核心的民族精神的最高体现。' },
+
+  { q:'遵义会议后，负责全权指挥军事的“三人团”成员是？',
+    o:['毛泽东、朱德、周恩来','毛泽东、周恩来、王稼祥','周恩来、张闻天、博古','毛泽东、张闻天、朱德'], a:1,
+    e:'遵义会议后，成立了由毛泽东、周恩来、王稼祥组成的三人团，负责全权指挥军事。' },
+
+  { q:'长征胜利结束的标志是？',
+    o:['遵义会议召开','中央红军到达吴起镇','红军三大主力会师','七七事变爆发'], a:2,
+    e:'1936年10月，红军三大主力会师，标志着长征胜利结束。' }
+];
+
+/* =========================================================
+   配置
+   ========================================================= */
+const QUIZ_LEN = 15;               // 每场抽取的题目数量
+const STORE_KEY = 'cz_quiz_v1';    // 本机保存进度的键名（不上传任何数据）
+
+const LETTERS = ['A','B','C','D'];
+const $ = id => document.getElementById(id);
+
+/* =========================================================
+   状态
+   ========================================================= */
+let state = null;
+
+/* 洗牌：Fisher-Yates，保证抽题不重复 */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* 新建一场：从题库随机抽 QUIZ_LEN 道 */
+function newState(){
+  const ids = shuffle(BANK.map((_, i) => i)).slice(0, QUIZ_LEN);
+  return { ids: ids, answers: new Array(QUIZ_LEN).fill(-1), idx: 0, submitted: false };
+}
+
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if(s && Array.isArray(s.ids) && s.ids.length === QUIZ_LEN &&
+       Array.isArray(s.answers) && s.answers.length === QUIZ_LEN){
+      return s;
+    }
+  }catch(e){}
+  return null;
+}
+
+/* =========================================================
+   切屏
+   ========================================================= */
+function show(id){
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   封面
+   ========================================================= */
+function renderCover(){
+  const d = new Date();
+  $('coverDate').textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  const answered = state.answers.filter(a => a >= 0).length;
+  $('btnStart').textContent = answered > 0 ? '继续答题' : '开始答题';
+  show('s-cover');
+}
+
+/* =========================================================
+   答题
+   ========================================================= */
+function renderQuiz(){
+  const q = BANK[state.ids[state.idx]];
+
+  $('qIndex').textContent = '第 ' + (state.idx + 1) + ' / ' + QUIZ_LEN + ' 题';
+  $('qAnswered').textContent = '已答 ' + state.answers.filter(a => a >= 0).length + ' 题';
+  $('qbarFill').style.width = (state.idx / QUIZ_LEN * 100) + '%';
+  $('qtext').textContent = q.q;
+
+  const box = $('options');
+  box.innerHTML = '';
+  q.o.forEach((text, i) => {
+    const b = document.createElement('button');
+    b.className = 'option' + (state.answers[state.idx] === i ? ' selected' : '');
+    b.innerHTML = '<span class="tag"></span><span class="otxt"></span>';
+    b.querySelector('.tag').textContent = LETTERS[i];
+    b.querySelector('.otxt').textContent = text;
+    b.addEventListener('click', () => {
+      state.answers[state.idx] = i;
+      save();
+      renderQuiz();
+    });
+    box.appendChild(b);
+  });
+
+  $('btnPrev').disabled = (state.idx === 0);
+
+  const isLast = (state.idx === QUIZ_LEN - 1);
+  $('btnNext').textContent = isLast ? '提交并查看成绩' : '下一题';
+  $('btnNext').disabled = (state.answers[state.idx] < 0);
+
+  window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   成绩
+   ========================================================= */
+function countCorrect(){
+  let n = 0;
+  state.ids.forEach((bankId, i) => {
+    if(state.answers[i] === BANK[bankId].a) n++;
+  });
+  return n;
+}
+
+function renderResult(){
+  const correct = countCorrect();
+  const score = Math.round(correct / QUIZ_LEN * 100);
+  $('scoreNum').textContent = score;
+  $('scoreSub').textContent = '答对 ' + correct + ' / ' + QUIZ_LEN + ' 题';
+  show('s-result');
+}
+
+/* =========================================================
+   回顾
+   ========================================================= */
+function renderReview(){
+  const correct = countCorrect();
+  $('reviewSum').textContent = '答对 ' + correct + ' / ' + QUIZ_LEN +
+    ' 题 · 得分 ' + Math.round(correct / QUIZ_LEN * 100) + ' 分';
+
+  const list = $('reviewList');
+  list.innerHTML = '';
+
+  state.ids.forEach((bankId, i) => {
+    const q = BANK[bankId];
+    const mine = state.answers[i];
+    const ok = (mine === q.a);
+
+    const item = document.createElement('div');
+    item.className = 'ritem ' + (ok ? 'ok' : 'no');
+
+    const mineText = mine >= 0
+      ? LETTERS[mine] + '. ' + q.o[mine]
+      : '未作答';
+
+    let html = '';
+    html += '<div class="rhead"><span>第 ' + (i + 1) + ' 题</span>';
+    html += '<span class="rmark ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓ 正确' : '✗ 错误') + '</span></div>';
+    html += '<p class="rq"></p>';
+    html += '<p class="ra mine">你的答案：' + mineText + '</p>';
+    if(!ok){
+      html += '<p class="ra">正确答案：' + LETTERS[q.a] + '. ' + q.o[q.a] + '</p>';
+    }
+    html += '<p class="rexp"></p>';
+
+    item.innerHTML = html;
+    item.querySelector('.rq').textContent = q.q;
+    item.querySelector('.rexp').textContent = '解析：' + q.e;
+    list.appendChild(item);
+  });
+
+  show('s-review');
+}
+
+/* =========================================================
+   提交 / 重来
+   ========================================================= */
+function submit(){
+  state.submitted = true;
+  save();
+  renderResult();
+}
+
+function restart(){
+  state = newState();
+  save();
+  renderCover();
+}
+
+/* =========================================================
+   事件绑定
+   ========================================================= */
+$('btnStart').addEventListener('click', () => {
+  show('s-quiz');
+  renderQuiz();
+});
+
+$('btnPrev').addEventListener('click', () => {
+  if(state.idx > 0){
+    state.idx--;
+    save();
+    renderQuiz();
+  }
+});
+
+$('btnNext').addEventListener('click', () => {
+  if(state.answers[state.idx] < 0) return;   // 没选不允许前进
+  if(state.idx === QUIZ_LEN - 1){
+    submit();
+  }else{
+    state.idx++;
+    save();
+    renderQuiz();
+  }
+});
+
+$('btnReview').addEventListener('click', renderReview);
+$('btnAgain1').addEventListener('click', restart);
+$('btnAgain2').addEventListener('click', restart);
+
+/* =========================================================
+   启动
+   ========================================================= */
+(function init(){
+  const saved = load();
+  if(saved){
+    state = saved;
+    if(state.submitted){
+      renderResult();               // 已经交过卷，直接看成绩
+    }else if(state.answers.some(a => a >= 0)){
+      renderCover();                // 答到一半刷新过，从封面点“继续答题”
+    }else{
+      renderCover();                // 只是打开过，还没答
+    }
+  }else{
+    state = newState();
+    save();
+    renderCover();
+  }
+})();
+</script>
+</body>
+</html>
